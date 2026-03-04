@@ -235,10 +235,45 @@ button:active:not(:disabled) {
   animation: voice-bar var(--bar-duration, 0.9s) ease-in-out infinite;
 }
 
+/* Recording button pulse animation */
+@keyframes recording-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(248, 113, 113, 0);
+  }
+}
+
+.recording-pulse {
+  animation: recording-pulse 1.2s ease-in-out infinite;
+}
+
+/* Finish Day button pulse animation */
+@keyframes finish-day-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(77, 142, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(77, 142, 255, 0);
+  }
+}
+
+.finish-day-pulse {
+  animation: finish-day-pulse 2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .voice-bar {
     animation: none;
     transform: scaleY(0.6);
     opacity: 0.7;
+  }
+  .recording-pulse {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.4);
+  }
+  .finish-day-pulse {
+    animation: none;
   }
 }

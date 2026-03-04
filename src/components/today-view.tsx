@@ -5,11 +5,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { WorkoutSection } from "./workout-section";
 import { NutritionSection } from "./nutrition-section";
+import { useRouter } from "next/navigation";
 
 interface TodayViewProps {
   dayLogRow: DayLogRow | null;
   goals: UserGoals | null;
 }
+
+const QUICK_ACTIONS = [
+  { label: "Log breakfast", message: "I had breakfast: " },
+  { label: "Add workout", message: "I just finished a workout: " },
+  { label: "Log meal", message: "I had a meal: " },
+  { label: "Log weight", message: "I weighed in at " },
+];
 
 function WeighInCard({ weighIns }: { weighIns: DayLog["weigh_ins"] }) {
   if (!weighIns?.length) return null;
@@ -40,6 +48,13 @@ function WeighInCard({ weighIns }: { weighIns: DayLog["weigh_ins"] }) {
 }
 
 function EmptyState({ type }: { type: "no_data" | "pending" | "failed" }) {
+  const router = useRouter();
+
+  const handleQuickAction = (message: string) => {
+    const encoded = encodeURIComponent(message);
+    router.push(`/app/chat?message=${encoded}`);
+  };
+
   if (type === "pending") {
     return (
       <Card className="p-10 text-center">
@@ -65,13 +80,31 @@ function EmptyState({ type }: { type: "no_data" | "pending" | "failed" }) {
   }
 
   return (
-    <Card className="p-10 text-center">
+    <Card className="p-6 sm:p-10 text-center">
       <div className="text-[52px] leading-none mb-3">🏋️</div>
       <p className="font-bold text-[17px] text-foreground mb-2">Nothing logged yet</p>
-      <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-        Chat with the AI to log workouts and meals, then tap &ldquo;Finish Day&rdquo; to generate your summary.
+      <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+        Chat with AI to log meals and workouts
       </p>
-      <Button asChild className="rounded-full px-7">
+
+      {/* Quick action chips */}
+      <div className="flex flex-wrap gap-2 justify-center mb-5">
+        {QUICK_ACTIONS.map((action) => (
+          <Button
+            key={action.label}
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickAction(action.message)}
+            className="rounded-full text-sm font-medium bg-secondary text-foreground border-0 hover:bg-primary/15 hover:text-primary whitespace-nowrap h-auto px-4 py-2 transition-colors"
+          >
+            {action.label}
+          </Button>
+        ))}
+      </div>
+
+      {/* Primary CTA */}
+      <Button asChild className="rounded-full px-7 text-[15px] font-semibold" style={{ background: "var(--brand)" }}>
         <a href="/app/chat">Start logging</a>
       </Button>
     </Card>

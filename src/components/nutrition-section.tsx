@@ -100,8 +100,25 @@ export function NutritionSection({ nutrition, goals }: NutritionSectionProps) {
       {/* Meals */}
       {hasMeals && (
         <Card className="p-0 gap-0 overflow-hidden">
-          <div className="px-4 pt-3 pb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
-            Meals
+          <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+              Meals
+            </span>
+            <div className="flex items-center gap-2.5 text-[10px] text-muted-foreground">
+              <span className="opacity-70">Confidence</span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: UNCERTAINTY_COLORS.low }} />
+                Low
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: UNCERTAINTY_COLORS.medium }} />
+                Med
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: UNCERTAINTY_COLORS.high }} />
+                High
+              </span>
+            </div>
           </div>
           {nutrition.meals.map((meal, idx) => (
             <MealRow key={idx} meal={meal} />

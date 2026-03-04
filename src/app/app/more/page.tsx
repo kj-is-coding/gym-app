@@ -69,6 +69,11 @@ export default async function MorePage() {
             <button
               type="submit"
               className="w-full flex items-center gap-3 px-4 py-4 hover:bg-accent transition-colors"
+              onClick={(e) => {
+                if (!confirm('Sign out? You\'ll need to sign in again with your email.')) {
+                  e.preventDefault();
+                }
+              }}
             >
               <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-muted shrink-0">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-destructive">

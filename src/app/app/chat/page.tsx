@@ -12,12 +12,18 @@ function getTodayLabel(): string {
   });
 }
 
-export default async function ChatPage() {
+interface ChatPageProps {
+  searchParams: Promise<{ message?: string }>;
+}
+
+export default async function ChatPage({ searchParams }: ChatPageProps) {
   const user = await getUser();
 
   if (!user) {
     redirect("/login");
   }
+
+  const { message } = await searchParams;
 
   return (
     <>
@@ -25,7 +31,7 @@ export default async function ChatPage() {
         title={getTodayLabel()}
         right={<FinishDayButton />}
       />
-      <Chat />
+      <Chat initialMessage={message} />
     </>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, UIMessage, TextUIPart } from "ai";
-import { useRef, useEffect, useState, FormEvent, useCallback } from "react";
+import { useRef, useEffect, useState, FormEvent, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SuggestionChips } from "./suggestion-chips";
@@ -68,11 +68,23 @@ const SUGGESTION_CHIPS = [
   { label: "How am I doing?", message: "How am I doing today with nutrition and training?" },
 ];
 
-export function Chat() {
-  const [input, setInput] = useState("");
+const LOADING_MESSAGES = [
+  "Thinking...",
+  "Analyzing...",
+  "Generating response...",
+];
+
+interface ChatProps {
+  initialMessage?: string;
+}
+
+export function Chat({ initialMessage }: ChatProps) {
+  const [input, setInput] = useState(initialMessage ?? "");
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [loadingElapsed, setLoadingElapsed] = useState(0);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -94,6 +106,44 @@ export function Chat() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isLoading = status === "submitted" || status === "streaming";
+  const loadingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const messageCycleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Track elapsed time and cycle status messages while loading
+  useEffect(() => {
+    if (isLoading) {
+      setLoadingElapsed(0);
+      setLoadingMessageIndex(0);
+
+      loadingTimerRef.current = setInterval(() => {
+        setLoadingElapsed((s) => s + 1);
+      }, 1000);
+
+      messageCycleTimerRef.current = setInterval(() => {
+        setLoadingMessageIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+      }, 2500);
+
+      return () => {
+        if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
+        if (messageCycleTimerRef.current) clearInterval(messageCycleTimerRef.current);
+      };
+    } else {
+      setLoadingElapsed(0);
+      setLoadingMessageIndex(0);
+    }
+  }, [isLoading]);
+
+  const loadingMessage = useMemo(
+    () => LOADING_MESSAGES[loadingMessageIndex],
+    [loadingMessageIndex]
+  );
+
+  const formatElapsedTime = (seconds: number): string => {
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${String(secs).padStart(2, "0")}`;
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -190,7 +240,7 @@ export function Chat() {
         barRefs.current.forEach((bar, i) => {
           if (!bar) return;
           const value = data[i * step] / 255; // 0–1
-          const height = Math.max(3, value * 20); // min 3px, max 20px
+          const height = Math.max(3, value * 32); // min 3px, max 32px
           bar.style.height = `${height}px`;
         });
         rafRef.current = requestAnimationFrame(drawBars);
@@ -334,16 +384,24 @@ export function Chat() {
         {isLoading && (
           <div className="flex justify-start msg-in">
             <div
-              className="flex gap-[5px] items-center"
+              className="flex flex-col items-start gap-1"
               style={{
                 padding: "12px 16px",
                 borderRadius: "18px 18px 18px 4px",
                 background: "var(--muted)",
               }}
             >
-              <span className="typing-dot w-1.5 h-1.5 rounded-full bg-muted-foreground inline-block" />
-              <span className="typing-dot w-1.5 h-1.5 rounded-full bg-muted-foreground inline-block" />
-              <span className="typing-dot w-1.5 h-1.5 rounded-full bg-muted-foreground inline-block" />
+              <div className="flex gap-[5px] items-center">
+                <span className="typing-dot w-1.5 h-1.5 rounded-full bg-muted-foreground inline-block" />
+                <span className="typing-dot w-1.5 h-1.5 rounded-full bg-muted-foreground inline-block" />
+                <span className="typing-dot w-1.5 h-1.5 rounded-full bg-muted-foreground inline-block" />
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>{loadingMessage}</span>
+                {loadingElapsed > 5 && (
+                  <span className="opacity-60">({formatElapsedTime(loadingElapsed)})</span>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -370,7 +428,7 @@ export function Chat() {
             <div className="flex items-center gap-2">
               {isRecording ? (
                 <>
-                  <div className="flex items-end gap-[3px] h-5" aria-hidden="true">
+                  <div className="flex items-end gap-[3px] h-8" aria-hidden="true">
                     {Array.from({ length: NUM_BARS }).map((_, i) => (
                       <div
                         key={i}
@@ -439,7 +497,10 @@ export function Chat() {
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isTranscribing || isLoading}
             title={isRecording ? "Stop recording" : "Voice input"}
-            className="w-11 h-11 rounded-full shrink-0 disabled:opacity-40"
+            className={cn(
+              "w-11 h-11 rounded-full shrink-0 disabled:opacity-40",
+              isRecording && "ring-2 ring-destructive ring-offset-2 ring-offset-card recording-pulse"
+            )}
           >
             {isRecording ? (
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
