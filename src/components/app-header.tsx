@@ -7,7 +7,7 @@ interface AppHeaderProps {
 export function AppHeader({ title, right, left }: AppHeaderProps) {
   return (
     <header
-      className="sticky top-0 z-40 flex items-center justify-between px-4 h-14 bg-card/80 border-b border-border"
+      className="sticky top-0 z-40 flex items-center justify-between px-4 lg:px-6 h-14 bg-card/80 border-b border-border"
       style={{
         paddingTop: "env(safe-area-inset-top)",
         backdropFilter: "blur(12px)",

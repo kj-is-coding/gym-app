@@ -47,7 +47,7 @@ export default async function TodayPage() {
   return (
     <>
       <AppHeader title={getTodayLabel()} />
-      <div className="px-4 py-4">
+      <div className="px-4 py-4 lg:px-6 lg:py-6">
         <TodayView
           dayLogRow={dayLogRow as DayLogRow | null}
           goals={(userGoalsRow?.data as UserGoals) ?? null}

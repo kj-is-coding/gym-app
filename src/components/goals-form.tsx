@@ -34,7 +34,7 @@ function NumberInput({
   const step = unit === "calories" ? 50 : 5;
 
   return (
-    <Card className="p-0 gap-0">
+    <Card className="p-0 gap-0 card-hover">
       <CardContent className="px-4 py-3 flex items-center justify-between">
         <div>
           <div className="text-[15px] font-medium text-foreground">{label}</div>
@@ -52,7 +52,7 @@ function NumberInput({
             type="number"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-18 bg-transparent border-none outline-none text-center text-xl font-bold"
+            className="w-18 bg-transparent border-none outline-none text-center text-xl font-bold tabular-nums"
             style={{ color, width: "72px" }}
           />
           <button
@@ -109,7 +109,7 @@ export function GoalsForm({ currentGoals }: GoalsFormProps) {
   return (
     <div className="space-y-4">
       {/* Goal type */}
-      <Card className="p-0 gap-0">
+      <Card className="p-0 gap-0 card-hover">
         <CardContent className="p-4">
           <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             Goal Type

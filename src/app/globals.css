@@ -277,3 +277,19 @@ button:active:not(:disabled) {
     animation: none;
   }
 }
+
+/* Tabular nums for numbers to prevent layout shift */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Desktop hover states for cards */
+@media (min-width: 1024px) {
+  .card-hover {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  }
+}

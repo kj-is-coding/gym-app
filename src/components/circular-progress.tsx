@@ -151,6 +151,7 @@ export function CircularProgress({
             }}
           >
             <span
+              className="tabular-nums"
               style={{
                 fontSize: size >= 90 ? "16px" : "13px",
                 fontWeight: 700,

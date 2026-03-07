@@ -17,7 +17,7 @@ export default async function HistoryPage() {
   return (
     <>
       <AppHeader title="History" left={backButton} />
-      <div className="px-4 py-4">
+      <div className="px-4 py-4 lg:px-6 lg:py-6">
         <HistoryView />
       </div>
     </>

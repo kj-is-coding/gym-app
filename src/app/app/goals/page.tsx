@@ -25,7 +25,7 @@ export default async function GoalsPage() {
   return (
     <>
       <AppHeader title="Goals" left={backButton} />
-      <div className="px-4 py-4">
+      <div className="px-4 py-4 lg:px-6 lg:py-6">
         <GoalsForm currentGoals={(goalsRow?.data as UserGoals) ?? null} />
       </div>
     </>

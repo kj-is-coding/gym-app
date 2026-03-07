@@ -1,22 +1,55 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { createClient } from "@/lib/auth-client";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 function LoginForm() {
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const authError = searchParams.get("error");
+  const emailParam = searchParams.get("email");
+
+  // Clean up URL by removing error parameter if email is present (from invite redirect)
+  useEffect(() => {
+    if (emailParam && authError) {
+      router.replace("/login?email=" + encodeURIComponent(emailParam));
+    }
+  }, [emailParam, authError, router]);
+
+  const [email, setEmail] = useState(emailParam || "");
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [error, setError] = useState("");
-  const searchParams = useSearchParams();
   const notAllowed = searchParams.get("error") === "not_allowed";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
     setError("");
+
+    // Check email whitelist via API
+    try {
+      const checkResponse = await fetch('/api/auth/check-whitelist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const { isWhitelisted } = await checkResponse.json();
+
+      if (!isWhitelisted) {
+        setStatus("error");
+        setError("This app is in private beta. Contact the developer for access.");
+        return;
+      }
+    } catch (err) {
+      console.error('Whitelist check failed:', err);
+      setStatus("error");
+      setError("Unable to verify access. Please try again.");
+      return;
+    }
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
@@ -60,9 +93,9 @@ function LoginForm() {
 
   return (
     <>
-      {notAllowed && (
+      {authError && !emailParam && (
         <div className="w-full rounded-xl px-4 py-3 mb-5 text-center text-sm text-destructive bg-destructive/10 border border-destructive">
-          This email isn&apos;t on the access list.
+          Authentication failed. Please try again.
         </div>
       )}
 

@@ -64,7 +64,7 @@ function ExerciseRow({ exercise }: { exercise: Session["exercises"][0] }) {
         )}
       </div>
       <div className="text-right shrink-0">
-        <div className="text-[15px] font-bold text-foreground">{getSetSummary(exercise.sets)}</div>
+        <div className="text-[15px] font-bold text-foreground tabular-nums">{getSetSummary(exercise.sets)}</div>
         {weightStr && <div className="text-xs text-muted-foreground mt-px">{weightStr}</div>}
       </div>
     </div>
@@ -77,7 +77,7 @@ function SessionCard({ session, defaultOpen }: { session: Session; defaultOpen: 
   const label = session.label || "Session";
 
   return (
-    <Card className="mb-2.5 overflow-hidden p-0 gap-0">
+    <Card className="mb-2.5 overflow-hidden p-0 gap-0 card-hover">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -118,7 +118,7 @@ function SessionCard({ session, defaultOpen }: { session: Session; defaultOpen: 
 export function WorkoutSection({ sessions }: { sessions: Session[] }) {
   if (sessions.length === 0) {
     return (
-      <Card className="p-4 mb-3">
+      <Card className="p-4 mb-3 card-hover">
         <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground mb-1.5">Workouts</p>
         <p className="text-sm text-muted-foreground">No workouts logged yet</p>
       </Card>

@@ -35,7 +35,7 @@ function DaySummaryCard({ log }: { log: DayLogSummary }) {
   });
 
   return (
-    <Card className="mb-3 p-0 gap-0">
+    <Card className="mb-3 p-0 gap-0 card-hover">
       <CardContent className="px-4 py-4">
         <p className="font-semibold text-[15px] text-foreground mb-3">{dateLabel}</p>
 
@@ -50,7 +50,7 @@ function DaySummaryCard({ log }: { log: DayLogSummary }) {
                   { label: "F", value: dayLog.nutrition.totals.f, color: "var(--fat)" },
                 ].map((m) => (
                   <div key={m.label}>
-                    <span className="text-sm font-semibold" style={{ color: m.color }}>{m.value}</span>
+                    <span className="text-sm font-semibold tabular-nums" style={{ color: m.color }}>{m.value}</span>
                     <span className="text-xs text-muted-foreground ml-0.5">{m.label}</span>
                   </div>
                 ))}
@@ -110,11 +110,13 @@ export function HistoryView() {
   return (
     <div>
       {/* Month navigation */}
-      <Card className="mb-4 p-0 gap-0">
+      <Card className="mb-4 p-0 gap-0 card-hover">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="icon" onClick={prevMonth} className="text-muted-foreground">
-              ‹
+            <Button variant="ghost" size="icon" onClick={prevMonth} className="text-muted-foreground hover:bg-accent">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
             </Button>
             <span className="text-base font-semibold text-foreground">
               {MONTH_NAMES[month - 1]} {year}
@@ -124,9 +126,11 @@ export function HistoryView() {
               size="icon"
               onClick={nextMonth}
               disabled={isCurrentMonth}
-              className="text-muted-foreground disabled:opacity-30"
+              className="text-muted-foreground disabled:opacity-30 hover:bg-accent"
             >
-              ›
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
             </Button>
           </div>
 
@@ -154,13 +158,15 @@ export function HistoryView() {
                 >
                   <span
                     className={cn(
-                      "text-[13px]",
-                      isToday ? "text-primary font-bold" : hasLog ? "text-foreground" : "text-muted-foreground"
+                      "text-[13px] rounded-full w-8 h-8 flex items-center justify-center",
+                      isToday && "bg-primary text-primary-foreground font-bold",
+                      !isToday && hasLog && "text-foreground",
+                      !isToday && !hasLog && "text-muted-foreground"
                     )}
                   >
                     {day}
                   </span>
-                  {hasLog && (
+                  {hasLog && !isToday && (
                     <span className="w-1 h-1 rounded-full bg-primary block mt-px" />
                   )}
                 </div>
@@ -178,7 +184,7 @@ export function HistoryView() {
           ))}
         </div>
       ) : logs.length === 0 ? (
-        <Card className="p-8 text-center">
+        <Card className="p-8 text-center card-hover">
           <p className="text-sm text-muted-foreground">
             No logs for {MONTH_NAMES[month - 1]} {year}
           </p>

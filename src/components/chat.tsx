@@ -76,9 +76,10 @@ const LOADING_MESSAGES = [
 
 interface ChatProps {
   initialMessage?: string;
+  variant?: "mobile" | "desktop";
 }
 
-export function Chat({ initialMessage }: ChatProps) {
+export function Chat({ initialMessage, variant = "mobile" }: ChatProps) {
   const [input, setInput] = useState(initialMessage ?? "");
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -342,7 +343,11 @@ export function Chat({ initialMessage }: ChatProps) {
   return (
     <div
       className="flex flex-col"
-      style={{ height: "calc(100dvh - 56px - 64px - env(safe-area-inset-bottom))" }}
+      style={{
+        height: variant === "desktop"
+          ? "100%"
+          : "calc(100dvh - 56px - 64px - env(safe-area-inset-bottom))"
+      }}
     >
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">

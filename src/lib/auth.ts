@@ -113,8 +113,8 @@ export async function updateSession(request: NextRequest) {
 
     // Check email allowlist
     if (user.email) {
-      const { isEmailAllowed } = await import("./allowlist");
-      if (!isEmailAllowed(user.email)) {
+      const { isEmailWhitelisted } = await import("./invite-operations");
+      if (!(await isEmailWhitelisted(user.email))) {
         const url = request.nextUrl.clone();
         url.pathname = "/login";
         url.searchParams.set("error", "not_allowed");

@@ -44,14 +44,36 @@ CREATE TABLE IF NOT EXISTS user_goals (
 );
 
 -- ============================================
--- 4. ENABLE ROW LEVEL SECURITY
+-- 4. INVITED_USERS (invite system + whitelist)
+-- ============================================
+CREATE TABLE IF NOT EXISTS invited_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT,                    -- NULLABLE (for generic invites)
+  name TEXT,                     -- NULLABLE (for generic invites)
+  invite_token TEXT UNIQUE,      -- Secure token for invite link
+  invited_by UUID,               -- User who created the invite
+  invited_at TIMESTAMPTZ DEFAULT NOW(),
+  accepted_at TIMESTAMPTZ,       -- Set when user completes magic link
+  is_generic BOOLEAN DEFAULT FALSE,  -- True for generic invites
+  claimed_at TIMESTAMPTZ,        -- Set when generic invite is claimed
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_invited_users_email ON invited_users(email);
+CREATE INDEX IF NOT EXISTS idx_invited_users_token ON invited_users(invite_token);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_invited_users_email_unique ON invited_users(email) WHERE email IS NOT NULL;
+
+-- ============================================
+-- 5. ENABLE ROW LEVEL SECURITY
 -- ============================================
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE day_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_goals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE invited_users ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
--- 5. RLS POLICIES
+-- 6. RLS POLICIES
 -- ============================================
 
 -- Messages: Users can only see their own messages
@@ -80,3 +102,5 @@ CREATE POLICY "Users can insert own goals" ON user_goals
 
 CREATE POLICY "Users can update own goals" ON user_goals
   FOR UPDATE USING (auth.uid() = user_id);
+
+-- Note: invited_users has NO policies - all access via service role (admin API only)
