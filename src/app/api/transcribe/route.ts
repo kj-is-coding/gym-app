@@ -1,12 +1,10 @@
 import { getUser } from "@/lib/auth";
 import { NextResponse } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(req: Request) {
   // 1. Check API key
-  if (!process.env.GROQ_API_KEY) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
     console.error("GROQ_API_KEY is not set");
     return NextResponse.json(
       { error: "Transcription service not configured" },
@@ -32,29 +30,45 @@ export async function POST(req: Request) {
     );
   }
 
-  console.log(`Transcribing audio: ${audioFile.name}, size: ${audioFile.size} bytes`);
+  console.log(`Transcribing audio: ${audioFile.name}, size: ${audioFile.size} bytes, type: ${audioFile.type}`);
 
-  // 5. Call Groq Whisper API (whisper-large-v3-turbo — ~10x faster than whisper-1)
+  // 5. Call Groq Whisper API directly using fetch
   try {
-    const transcription = await groq.audio.transcriptions.create({
-      file: audioFile,
-      model: "whisper-large-v3-turbo",
-      language: "en",
-      response_format: "json",
+    const blob = await audioFile.arrayBuffer();
+    const buffer = Buffer.from(blob);
+
+    const response = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: (() => {
+        const formData = new FormData();
+        formData.append("file", new Blob([buffer], { type: audioFile.type }), audioFile.name);
+        formData.append("model", "whisper-large-v3-turbo");
+        formData.append("language", "en");
+        formData.append("response_format", "json");
+        return formData;
+      })(),
     });
 
-    console.log(`Transcription success: "${transcription.text}"`);
-    return NextResponse.json({ text: transcription.text });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Groq API error: ${response.status} ${response.statusText}`, errorText);
+      return NextResponse.json(
+        { error: "Transcription service error" },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    console.log(`Transcription success: "${data.text}"`);
+    return NextResponse.json({ text: data.text });
   } catch (error) {
     console.error("Transcription error:", error);
     if (error instanceof Error) {
       console.error("Error message:", error.message);
       console.error("Error stack:", error.stack);
-    }
-    // Check for Groq-specific errors
-    if (error && typeof error === "object" && "response" in error) {
-      const response = (error as any).response;
-      console.error("Groq API response:", response?.data, response?.status);
     }
     return NextResponse.json(
       { error: "Transcription failed" },
